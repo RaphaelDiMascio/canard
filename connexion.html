@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Connexion Client Professionnel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Connexion à votre Espace Professionnel</h2>
+            <div id="login-message" class="form-message" style="display:none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Adresse Email Professionnelle :</label>
+                    <input type="email" id="email" name="email" required placeholder="votreadresse@entreprise.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe :</label>
+                    <input type="password" id="password" name="password" required placeholder="Votre mot de passe sécurisé">
+                </div>
+                <button type="submit" class="btn btn-primary">Se Connecter</button>
+            </form>
+            <div class="form-links">
+                <a href="#">Mot de passe oublié ?</a> <span>|</span>
+                <a href="inscription.html">Créer un compte professionnel</a> </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+        <p><a href="#">Mentions Légales</a> | <a href="#">Conditions Générales de Vente B2B</a></p>
+    </footer>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('logout')) {
+            const loginMessage = document.getElementById('login-message');
+            loginMessage.textContent = 'Vous avez été déconnecté avec succès.';
+            loginMessage.className = 'form-message success';
+            loginMessage.style.display = 'block';
+        }
+         if (urlParams.has('registrationSuccess')) {
+            const loginMessage = document.getElementById('login-message');
+            loginMessage.textContent = 'Votre demande d\'inscription a été envoyée. Veuillez attendre sa validation pour vous connecter.';
+            loginMessage.className = 'form-message info';
+            loginMessage.style.display = 'block';
+        }
+        if (urlParams.has('orderPlaced')) {
+            const loginMessage = document.getElementById('login-message');
+            loginMessage.textContent = 'Votre commande a bien été enregistrée ! Vous pouvez vous reconnecter pour la consulter.';
+            loginMessage.className = 'form-message success';
+            loginMessage.style.display = 'block';
+        }
+
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const messageDiv = document.getElementById('login-message');
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            // DS02: Vérifier l'existence de l'identifiant
+            // DS04: Vérifier la validité du mot de passe
+            const loginResult = login(email, password); // Fonction de auth.js
+
+            if (loginResult.success) {
+                messageDiv.textContent = loginResult.message + ' Redirection...';
+                messageDiv.className = 'form-message success';
+                messageDiv.style.display = 'block';
+                // DS05: Authentifier et rediriger le client
+                setTimeout(() => {
+                    window.location.href = 'mon-compte.html'; // Ou 'Catalogue.html' ou 'panier.html'
+                }, 1500);
+            } else {
+                messageDiv.textContent = loginResult.message;
+                messageDiv.className = 'form-message error';
+                messageDiv.style.display = 'block';
+                passwordInput.value = ''; // Vide le champ mot de passe en cas d'erreur
+                passwordInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

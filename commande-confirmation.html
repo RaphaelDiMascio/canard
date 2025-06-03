@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Confirmation de Commande</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a> <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <div class="checkout-steps">
+            <div class="checkout-step completed">1. Panier</div>
+            <div class="checkout-step completed">2. Adresses</div>
+            <div class="checkout-step completed">3. Paiement & Livraison</div>
+            <div class="checkout-step active"><span class="step-number">4</span>Confirmation</div>
+        </div>
+
+        <div id="confirmationContent" class="form-container" style="text-align: center;">
+            <img src="https://placehold.co/100x100/28a745/ffffff?text=✓" alt="Icône Succès" style="border-radius:50%; margin-bottom:1.5em;">
+            <h2>Merci pour votre commande !</h2>
+            <p>Votre commande <strong id="confirmedOrderId"></strong> a bien été enregistrée et est en cours de traitement.</p>
+            <p>Un email de confirmation (DS23) vous a été envoyé à l'adresse : <strong id="confirmedUserEmail"></strong>.</p>
+            <p>La date de livraison prévue est le : <strong id="confirmedDeliveryDate"></strong>.</p>
+            <p>Vous pouvez suivre l'état de votre commande dans votre <a href="mon-compte.html#orders">espace client</a>.</p>
+            <p>La facture (DS26) vous sera transmise selon les modalités convenues.</p>
+
+            <div style="margin-top: 2.5em;">
+                <a href="Catalogue.html" class="btn btn-secondary">Continuer mes achats</a>
+                <a href="mon-compte.html#orders" class="btn btn-primary">Voir mes commandes</a>
+            </div>
+        </div>
+        <div id="confirmationError" class="form-message error" style="display:none; text-align:center;">
+            <p>Une erreur est survenue lors de la récupération des détails de votre commande. Veuillez consulter votre espace client ou nous contacter.</p>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+    </footer>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount(); // Le panier doit être vide ici.
+        checkLoginStatus();
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            // Normalement, l'utilisateur ne devrait pas arriver ici sans être connecté
+            // Mais au cas où, on le redirige.
+            window.location.href = 'connexion.html?orderPlaced=true';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderIdFromUrl = urlParams.get('orderId');
+
+        if (orderIdFromUrl && currentUser) {
+            // Récupérer la commande depuis le localStorage (simulation)
+            const orders = JSON.parse(localStorage.getItem('userOrders')) || [];
+            const confirmedOrder = orders.find(order => order.orderId === orderIdFromUrl && order.user.email === currentUser.email);
+
+            if (confirmedOrder) {
+                document.getElementById('confirmedOrderId').textContent = confirmedOrder.orderId;
+                document.getElementById('confirmedUserEmail').textContent = confirmedOrder.user.email;
+                
+                const deliveryDate = new Date(confirmedOrder.deliveryDate);
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('confirmedDeliveryDate').textContent = deliveryDate.toLocaleDateString('fr-FR', options);
+
+                document.getElementById('confirmationContent').style.display = 'block';
+            } else {
+                document.getElementById('confirmationError').style.display = 'block';
+            }
+        } else {
+            document.getElementById('confirmationError').innerHTML = "<p>Aucun identifiant de commande trouvé. Veuillez vérifier votre espace client.</p>"
+            document.getElementById('confirmationError').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

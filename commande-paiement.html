@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Paiement et Livraison</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <div class="checkout-steps">
+            <div class="checkout-step completed">1. Panier</div>
+            <div class="checkout-step completed">2. Adresses</div>
+            <div class="checkout-step active"><span class="step-number">3</span>Paiement & Livraison</div>
+            <div class="checkout-step">4. Confirmation</div>
+        </div>
+
+        <h2>Modalités de Paiement et Date de Livraison</h2>
+        
+        <div class="form-container" style="max-width: 800px;">
+            <div id="payment-message" class="form-message" style="display:none;"></div>
+
+            <form id="paymentDeliveryForm">
+                <fieldset>
+                    <legend>Mode de Règlement Contractuel</legend>
+                    <div class="form-group">
+                        <p>Votre mode de règlement contractuel est le <strong>paiement différé à 30 jours net</strong> à compter de la date de facturation.</p>
+                        <p>Aucune action de paiement immédiat n'est requise sur cette plateforme.</p>
+                        <input type="hidden" id="paymentMethod" name="paymentMethod" value="differe_30_jours">
+                        <!-- On pourrait afficher ici des infos sur le RIB si nécessaire pour un premier client,
+                             ou un lien vers ses conditions de paiement dans son espace client. -->
+                    </div>
+                </fieldset>
+
+                <fieldset style="margin-top: 2em;">
+                    <legend>Date de Livraison Souhaitée</legend>
+                    <div class="form-group">
+                        <label for="deliveryDate">Choisissez une date de livraison : *</label>
+                        <input type="date" id="deliveryDate" name="deliveryDate" required>
+                        <p class="form-help-text">Les livraisons sont effectuées du Lundi au Vendredi. Prévoyez un délai minimum de 48h ouvrées.</p>
+                    </div>
+                </fieldset>
+
+                <fieldset style="margin-top: 2em;">
+                    <legend>Récapitulatif de la Commande</legend>
+                    <div id="order-recap-summary" class="order-recap" style="background-color: #fff; padding:0; border:none;">
+                        </div>
+                </fieldset>
+                
+                <div class="form-group" style="margin-top: 2em;">
+                    <input type="checkbox" id="termsConfirm" name="termsConfirm" required>
+                    <label for="termsConfirm" style="display:inline; font-weight:normal;">Je confirme avoir vérifié ma commande et j'accepte les <a href="#" target="_blank">modalités de paiement et de livraison</a>. *</label>
+                </div>
+
+
+                <div class="order-actions" style="margin-top:2em;">
+                    <a href="commande-adresse.html" class="btn btn-secondary">&laquo; Modifier les Adresses</a>
+                    <button type="submit" class="btn btn-primary btn-large">Valider et Confirmer la Commande &raquo;</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+    </footer>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus();
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'connexion.html?redirect=commande-paiement.html';
+        }
+
+        // Récupérer les infos du panier et des totaux
+        const checkoutCart = JSON.parse(sessionStorage.getItem('checkoutCart'));
+        const checkoutTotals = JSON.parse(sessionStorage.getItem('checkoutTotals'));
+        const shippingAddress = JSON.parse(sessionStorage.getItem('shippingAddress'));
+        const billingAddress = JSON.parse(sessionStorage.getItem('billingAddress'));
+
+
+        if (!checkoutCart || !checkoutTotals || !shippingAddress || !billingAddress) {
+            alert("Une erreur est survenue avec votre session de commande. Veuillez recommencer depuis le panier.");
+            window.location.href = 'panier.html';
+        }
+
+        // Afficher le récapitulatif
+        const recapContainer = document.getElementById('order-recap-summary');
+        if (recapContainer && checkoutTotals) {
+            recapContainer.innerHTML = `
+                <div class="recap-row"><span>Sous-total Net (HT) :</span><span>${checkoutTotals.finalSubtotalHT.toFixed(2)} €</span></div>
+                <div class="recap-row"><span>TVA (20%) :</span><span>${checkoutTotals.tvaAmount.toFixed(2)} €</span></div>
+                <div class="recap-row"><span>Frais de livraison (HT) :</span><span>${checkoutTotals.shippingCost > 0 ? checkoutTotals.shippingCost.toFixed(2) + ' €' : 'Offerte'}</span></div>
+                <div class="recap-row total"><span>Total Commande (TTC) :</span><span>${checkoutTotals.totalTTC.toFixed(2)} €</span></div>
+            `;
+        }
+        
+        // Logique pour la date de livraison
+        const deliveryDateInput = document.getElementById('deliveryDate');
+        const today = new Date();
+        const minDeliveryDate = new Date(today);
+        // Ajoute 2 jours ouvrés (simple simulation, ne gère pas les weekends/fériés finement)
+        let businessDaysAdded = 0;
+        while(businessDaysAdded < 2) {
+            minDeliveryDate.setDate(minDeliveryDate.getDate() + 1);
+            if (minDeliveryDate.getDay() !== 0 && minDeliveryDate.getDay() !== 6) { // Dimanche = 0, Samedi = 6
+                businessDaysAdded++;
+            }
+        }
+        deliveryDateInput.min = minDeliveryDate.toISOString().split('T')[0];
+        deliveryDateInput.value = deliveryDateInput.min; // Pré-remplir avec la date min
+
+
+        document.getElementById('paymentDeliveryForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const messageDiv = document.getElementById('payment-message');
+            messageDiv.style.display = 'none';
+
+            if (!document.getElementById('termsConfirm').checked) {
+                messageDiv.textContent = "Veuillez confirmer que vous avez vérifié votre commande et acceptez les modalités.";
+                messageDiv.className = 'form-message error';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            
+            const selectedDeliveryDate = document.getElementById('deliveryDate').value;
+            // Validation de la date (doit être >= min)
+            if (new Date(selectedDeliveryDate) < new Date(deliveryDateInput.min)) {
+                 messageDiv.textContent = "La date de livraison sélectionnée n'est pas valide. Veuillez choisir une date ultérieure.";
+                 messageDiv.className = 'form-message error';
+                 messageDiv.style.display = 'block';
+                return;
+            }
+
+
+            // Enregistrement de la commande (simulation)
+            const orderData = {
+                user: currentUser,
+                cart: checkoutCart,
+                totals: checkoutTotals,
+                shippingAddress: shippingAddress,
+                billingAddress: billingAddress,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                deliveryDate: selectedDeliveryDate,
+                orderDate: new Date().toISOString(),
+                orderId: `CMD-${Date.now()}` // Génération d'un ID de commande simple
+            };
+            
+            // Sauvegarder la commande dans le localStorage (pour la page de confirmation et l'historique)
+            let orders = JSON.parse(localStorage.getItem('userOrders')) || [];
+            orders.push(orderData);
+            localStorage.setItem('userOrders', JSON.stringify(orders));
+
+            // DS23: Envoi de la confirmation de commande (simulé par redirection)
+            // DS26: Générer la facture (simulé, pourrait être fait côté serveur)
+            
+            // Vider le panier de la session et le panier principal après commande
+            localStorage.removeItem('cart'); 
+            sessionStorage.removeItem('checkoutCart');
+            sessionStorage.removeItem('checkoutTotals');
+            sessionStorage.removeItem('shippingAddress');
+            sessionStorage.removeItem('billingAddress');
+            updateNavCartCount(); // Mettre à jour le compteur dans la nav
+
+            // Rediriger vers la page de confirmation
+            window.location.href = `commande-confirmation.html?orderId=${orderData.orderId}`;
+        });
+
+    </script>
+</body>
+</html>

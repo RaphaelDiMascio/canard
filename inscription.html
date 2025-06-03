@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Création de Compte Professionnel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" class="nav-right">Déjà client ? Connectez-vous</a>
+    </nav>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Demande d'Ouverture de Compte Professionnel</h2>
+            <p style="text-align: center; margin-bottom: 1.5em; font-size:0.9em;">Veuillez remplir ce formulaire avec attention. Votre demande sera examinée par notre service commercial avant validation de votre compte.</p>
+            <div id="inscription-message" class="form-message" style="display:none;"></div>
+
+            <form id="inscriptionForm">
+                <fieldset>
+                    <legend>Informations sur votre Entreprise</legend>
+                    <div class="form-group">
+                        <label for="companyName">Nom de la société : *</label>
+                        <input type="text" id="companyName" name="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="siret">N° SIRET : *</label>
+                        <input type="text" id="siret" name="siret" required placeholder="Ex: 123 456 789 00010">
+                    </div>
+                    <div class="form-group">
+                        <label for="activitySector">Secteur d'activité (Restaurant, Traiteur, Boucher, etc.) :</label>
+                        <input type="text" id="activitySector" name="activitySector">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Informations du Contact Principal</legend>
+                    <div class="form-group">
+                        <label for="contactLastName">Nom du contact : *</label>
+                        <input type="text" id="contactLastName" name="contactLastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactFirstName">Prénom du contact : *</label>
+                        <input type="text" id="contactFirstName" name="contactFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Adresse Email professionnelle (pour la connexion) : *</label>
+                        <input type="email" id="email" name="email" required placeholder="contact@entreprise.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Téléphone direct : *</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="Ex: 0123456789">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Adresse de Facturation Principale</legend>
+                    <div class="form-group">
+                        <label for="addressStreet">N° et Nom de la voie : *</label>
+                        <input type="text" id="addressStreet" name="addressStreet" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addressPostalCode">Code Postal : *</label>
+                        <input type="text" id="addressPostalCode" name="addressPostalCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addressCity">Ville : *</label>
+                        <input type="text" id="addressCity" name="addressCity" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="addressCountry">Pays : *</label>
+                        <input type="text" id="addressCountry" name="addressCountry" value="France" required>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Création de votre Mot de Passe</legend>
+                    <div class="form-group">
+                        <label for="password">Choisissez un mot de passe : *</label>
+                        <input type="password" id="password" name="password" required minlength="8">
+                        <p class="form-help-text">Minimum 8 caractères, incluant idéalement chiffres et symboles.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmez le mot de passe : *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                </fieldset>
+
+                <div class="form-group">
+                    <input type="checkbox" id="cgv" name="cgv" required>
+                    <label for="cgv" style="display:inline; font-weight:normal;">J'atteste avoir lu et accepté les <a href="#" target="_blank" title="Lire les Conditions Générales de Vente">Conditions Générales de Vente B2B</a> de Canard Dodu. *</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Envoyer ma demande d'ouverture de compte</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+        <p><a href="#">Mentions Légales</a> | <a href="#">Conditions Générales de Vente B2B</a></p>
+    </footer>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        
+        document.getElementById('inscriptionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageDiv = document.getElementById('inscription-message');
+
+            if (password !== confirmPassword) {
+                messageDiv.textContent = 'Les mots de passe saisis ne correspondent pas. Veuillez vérifier.';
+                messageDiv.className = 'form-message error';
+                messageDiv.style.display = 'block';
+                document.getElementById('confirmPassword').focus();
+                return;
+            }
+            if (!document.getElementById('cgv').checked) {
+                messageDiv.textContent = 'Vous devez accepter les Conditions Générales de Vente B2B.';
+                messageDiv.className = 'form-message error';
+                messageDiv.style.display = 'block';
+                document.getElementById('cgv').focus();
+                return;
+            }
+
+            const formData = {
+                companyName: document.getElementById('companyName').value,
+                siret: document.getElementById('siret').value,
+                activitySector: document.getElementById('activitySector').value,
+                contactLastName: document.getElementById('contactLastName').value,
+                contactFirstName: document.getElementById('contactFirstName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                addressStreet: document.getElementById('addressStreet').value,
+                addressPostalCode: document.getElementById('addressPostalCode').value,
+                addressCity: document.getElementById('addressCity').value,
+                addressCountry: document.getElementById('addressCountry').value,
+                password: password
+            };
+            
+            const registrationResult = register(formData); // Fonction de auth.js
+
+            if (registrationResult.success) {
+                messageDiv.textContent = registrationResult.message;
+                messageDiv.className = 'form-message success'; // Ou 'info' si attente de validation
+                messageDiv.style.display = 'block';
+                this.reset(); // Vide le formulaire
+                // Optionnel: rediriger vers une page de confirmation ou la page de connexion avec un message
+                setTimeout(() => { window.location.href = 'connexion.html?registrationSuccess=true'; }, 4000);
+            } else {
+                messageDiv.textContent = registrationResult.message;
+                messageDiv.className = 'form-message error';
+                messageDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

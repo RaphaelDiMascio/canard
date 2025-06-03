@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Mon Espace Client B2B</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" class="active" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <h2 id="user-welcome-message">Mon Espace Client</h2>
+        
+        <div class="account-dashboard">
+            <aside class="account-menu">
+                <ul>
+                    <li><a href="#dashboard" class="active-account-link" onclick="showAccountSection('dashboard', this)">Tableau de Bord</a></li>
+                    <li><a href="#profile" onclick="showAccountSection('profile', this)">Informations Entreprise</a></li>
+                    <li><a href="#orders" onclick="showAccountSection('orders', this)">Mes Commandes</a></li>
+                    <li><a href="#addresses" onclick="showAccountSection('addresses', this)">Mes Adresses</a></li>
+                    <li><a href="#" onclick="logout()">Déconnexion</a></li>
+                </ul>
+            </aside>
+
+            <main class="account-content">
+                <section id="dashboard-section" class="account-section">
+                    <h3>Tableau de Bord</h3>
+                    <p>Bienvenue dans votre espace personnalisé. D'ici, vous pouvez gérer vos informations, consulter vos commandes et plus encore.</p>
+                    <div class="quick-stats" style="margin-top:1.5em; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1em;">
+                        <div style="background-color:#f0f8ff; padding:1em; border-radius:5px; text-align:center;">
+                            <h4>Commandes Récentes</h4>
+                            <p id="recentOrdersCount" style="font-size:1.5em; font-weight:bold;">0</p>
+                            <a href="#orders" onclick="showAccountSection('orders', document.querySelector('a[href=\\'#orders\\']'))" class="btn btn-secondary btn-sm">Voir Détails</a>
+                        </div>
+                         <div style="background-color:#fff0f5; padding:1em; border-radius:5px; text-align:center;">
+                            <h4>Adresses Enregistrées</h4>
+                            <p id="savedAddressesCount" style="font-size:1.5em; font-weight:bold;">0</p>
+                            <a href="#addresses" onclick="showAccountSection('addresses', document.querySelector('a[href=\\'#addresses\\']'))" class="btn btn-secondary btn-sm">Gérer Adresses</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="profile-section" class="account-section" style="display:none;">
+                    <h3>Informations de l'Entreprise et Contact</h3>
+                    <form id="profileForm" class="form-container" style="box-shadow:none; padding:0; margin:0; max-width:none;">
+                        <div id="profile-message" class="form-message" style="display:none;"></div>
+                        <fieldset>
+                            <legend>Informations Société</legend>
+                            <div class="form-group">
+                                <label for="accCompanyName">Nom de la société :</label>
+                                <input type="text" id="accCompanyName" name="companyName" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="accSiret">N° SIRET :</label>
+                                <input type="text" id="accSiret" name="siret" readonly>
+                            </div>
+                        </fieldset>
+                        <fieldset style="margin-top:1.5em;">
+                             <legend>Contact Principal</legend>
+                            <div class="form-group">
+                                <label for="accContactName">Nom du contact :</label>
+                                <input type="text" id="accContactName" name="contactName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="accEmail">Email de connexion :</label>
+                                <input type="email" id="accEmail" name="email" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="accPhone">Téléphone :</label>
+                                <input type="tel" id="accPhone" name="phone" required>
+                            </div>
+                        </fieldset>
+                        <button type="submit" class="btn btn-primary" style="margin-top:1em;">Mettre à jour les informations de contact</button>
+                    </form>
+                </section>
+
+                <section id="orders-section" class="account-section" style="display:none;">
+                    <h3>Historique de vos Commandes</h3>
+                    <div id="ordersListContainer">
+                        <p>Chargement de vos commandes...</p>
+                        </div>
+                </section>
+
+                <section id="addresses-section" class="account-section" style="display:none;">
+                    <h3>Gestion de vos Adresses</h3>
+                    <button id="addAddressBtn" class="btn btn-primary btn-sm" style="margin-bottom:1.5em;">Ajouter une nouvelle adresse</button>
+                    <div id="addressesListContainer" class="address-grid">
+                        <p>Chargement de vos adresses...</p>
+                        </div>
+                    <div id="addEditAddressFormContainer" style="display:none; margin-top:2em; padding-top:1.5em; border-top:1px solid #eee;">
+                        <h4 id="addressFormTitle">Ajouter une nouvelle adresse</h4>
+                        <form id="addressForm" class="form-container" style="box-shadow:none; padding:0; margin:0; max-width:none;">
+                            <input type="hidden" id="addressId" name="addressId">
+                            <div class="form-group">
+                                <label for="addressType">Type d'adresse (ex: Livraison principale, Bureau, Dépôt) : *</label>
+                                <input type="text" id="addressType" name="addressType" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addressStreetModal">N° et Nom de la voie : *</label>
+                                <input type="text" id="addressStreetModal" name="addressStreetModal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addressPostalCodeModal">Code Postal : *</label>
+                                <input type="text" id="addressPostalCodeModal" name="addressPostalCodeModal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addressCityModal">Ville : *</label>
+                                <input type="text" id="addressCityModal" name="addressCityModal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addressCountryModal">Pays : *</label>
+                                <input type="text" id="addressCountryModal" name="addressCountryModal" value="France" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" id="isDefaultShippingModal" name="isDefaultShippingModal">
+                                <label for="isDefaultShippingModal" style="display:inline; font-weight:normal;">Définir comme adresse de livraison par défaut</label>
+                            </div>
+                             <div class="form-group">
+                                <input type="checkbox" id="isDefaultBillingModal" name="isDefaultBillingModal">
+                                <label for="isDefaultBillingModal" style="display:inline; font-weight:normal;">Définir comme adresse de facturation par défaut</label>
+                            </div>
+                            <div style="margin-top:1em;">
+                                <button type="submit" class="btn btn-primary">Enregistrer l'adresse</button>
+                                <button type="button" id="cancelAddressFormBtn" class="btn btn-secondary">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus(); // Assure que les éléments de nav sont corrects
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'connexion.html?redirect=mon-compte.html';
+        } else {
+            document.getElementById('user-welcome-message').textContent = `Bienvenue, ${currentUser.contactName || currentUser.companyName} !`;
+            loadProfileData();
+            loadOrdersData();
+            loadAddressesData();
+            updateDashboardStats();
+        }
+        
+        function showAccountSection(sectionId, clickedLink) {
+            document.querySelectorAll('.account-section').forEach(section => section.style.display = 'none');
+            document.getElementById(sectionId + '-section').style.display = 'block';
+            document.querySelectorAll('.account-menu a').forEach(link => link.classList.remove('active-account-link'));
+            if(clickedLink) clickedLink.classList.add('active-account-link');
+            
+            // Cacher le formulaire d'adresse si on quitte la section adresses
+            if (sectionId !== 'addresses') {
+                document.getElementById('addEditAddressFormContainer').style.display = 'none';
+            }
+        }
+        
+        window.onload = () => {
+            const hash = window.location.hash.substring(1);
+            if (hash && document.getElementById(hash + '-section')) {
+                 showAccountSection(hash, document.querySelector(`.account-menu a[href="#${hash}"]`));
+            } else {
+                showAccountSection('dashboard', document.querySelector('.account-menu a[href="#dashboard"]'));
+            }
+        };
+
+        function loadProfileData() {
+            if (!currentUser) return;
+            document.getElementById('accCompanyName').value = currentUser.companyName || '';
+            document.getElementById('accSiret').value = currentUser.siret || '';
+            document.getElementById('accContactName').value = currentUser.contactName || '';
+            document.getElementById('accEmail').value = currentUser.email || '';
+            document.getElementById('accPhone').value = currentUser.phone || '';
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const profileMessage = document.getElementById('profile-message');
+            currentUser.contactName = document.getElementById('accContactName').value;
+            currentUser.phone = document.getElementById('accPhone').value;
+            
+            // Mettre à jour dans localStorage
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // Mettre à jour dans la "base de données" simulée MOCK_USERS
+            if (MOCK_USERS[currentUser.email]) {
+                MOCK_USERS[currentUser.email].contactName = currentUser.contactName;
+                MOCK_USERS[currentUser.email].phone = currentUser.phone;
+            }
+            
+            profileMessage.textContent = "Informations de contact mises à jour avec succès !";
+            profileMessage.className = 'form-message success';
+            profileMessage.style.display = 'block';
+            setTimeout(() => { profileMessage.style.display = 'none'; }, 3000);
+            document.getElementById('user-welcome-message').textContent = `Bienvenue, ${currentUser.contactName || currentUser.companyName} !`; // Mettre à jour le message d'accueil
+        });
+
+        function loadOrdersData() {
+            const ordersContainer = document.getElementById('ordersListContainer');
+            ordersContainer.innerHTML = ''; // Clear
+            const orders = JSON.parse(localStorage.getItem('userOrders')) || [];
+            const userOrders = orders.filter(order => order.user.email === currentUser.email);
+
+            if (userOrders.length === 0) {
+                ordersContainer.innerHTML = "<p>Vous n'avez pas encore passé de commande.</p>";
+                return;
+            }
+            
+            userOrders.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate)); // Trier par date décroissante
+
+            const table = document.createElement('table');
+            table.className = 'order-history-table'; // Réutiliser le style
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Date Commande</th>
+                        <th>Date Livraison Prévue</th>
+                        <th>Montant TTC</th>
+                        <th>Statut (Simulé)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            userOrders.forEach(order => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${order.orderId}</td>
+                    <td>${new Date(order.orderDate).toLocaleDateString('fr-FR')}</td>
+                    <td>${new Date(order.deliveryDate).toLocaleDateString('fr-FR')}</td>
+                    <td>${order.totals.totalTTC.toFixed(2)} €</td>
+                    <td class="status-processing">En préparation</td> 
+                `;
+                 // On pourrait ajouter un bouton "Voir détails" qui afficherait les lignes de la commande
+            });
+            ordersContainer.appendChild(table);
+        }
+
+        function loadAddressesData() {
+            const addressesContainer = document.getElementById('addressesListContainer');
+            addressesContainer.innerHTML = ''; // Clear
+            if (!currentUser || !currentUser.addresses || currentUser.addresses.length === 0) {
+                addressesContainer.innerHTML = "<p>Aucune adresse enregistrée.</p>";
+                return;
+            }
+            currentUser.addresses.forEach(addr => {
+                const card = document.createElement('div');
+                card.className = 'address-card';
+                let defaultTags = '';
+                if (addr.isDefaultShipping) defaultTags += '<span style="font-size:0.8em; background:#e0f0ff; color:#005f99; padding:2px 5px; border-radius:3px; margin-right:5px;">Livraison par défaut</span>';
+                if (addr.isDefaultBilling) defaultTags += '<span style="font-size:0.8em; background:#e0fff0; color:#007000; padding:2px 5px; border-radius:3px;">Facturation par défaut</span>';
+
+                card.innerHTML = `
+                    <h4>${addr.type || 'Adresse'} ${defaultTags}</h4>
+                    <p>${addr.street}<br>${addr.postalCode} ${addr.city}<br>${addr.country}</p>
+                    <div class="actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editAddress('${addr.id}')">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAddress('${addr.id}')">Supprimer</button>
+                    </div>
+                `;
+                addressesContainer.appendChild(card);
+            });
+        }
+        
+        document.getElementById('addAddressBtn').addEventListener('click', () => {
+            document.getElementById('addressFormTitle').textContent = "Ajouter une nouvelle adresse";
+            document.getElementById('addressForm').reset();
+            document.getElementById('addressId').value = ''; // Pas d'ID pour une nouvelle adresse
+            document.getElementById('addEditAddressFormContainer').style.display = 'block';
+        });
+         document.getElementById('cancelAddressFormBtn').addEventListener('click', () => {
+            document.getElementById('addEditAddressFormContainer').style.display = 'none';
+        });
+
+        document.getElementById('addressForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const addressId = document.getElementById('addressId').value;
+            const newAddress = {
+                id: addressId || `addr${Date.now()}`, // Nouvel ID si création
+                type: document.getElementById('addressType').value,
+                street: document.getElementById('addressStreetModal').value,
+                postalCode: document.getElementById('addressPostalCodeModal').value,
+                city: document.getElementById('addressCityModal').value,
+                country: document.getElementById('addressCountryModal').value,
+                isDefaultShipping: document.getElementById('isDefaultShippingModal').checked,
+                isDefaultBilling: document.getElementById('isDefaultBillingModal').checked,
+            };
+
+            if (newAddress.isDefaultShipping) {
+                currentUser.addresses.forEach(a => a.isDefaultShipping = false);
+            }
+            if (newAddress.isDefaultBilling) {
+                currentUser.addresses.forEach(a => a.isDefaultBilling = false);
+            }
+
+            if (addressId) { // Edition
+                const index = currentUser.addresses.findIndex(a => a.id === addressId);
+                if (index > -1) currentUser.addresses[index] = newAddress;
+            } else { // Ajout
+                currentUser.addresses.push(newAddress);
+            }
+            
+            // Mettre à jour localStorage et MOCK_USERS
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            if (MOCK_USERS[currentUser.email]) MOCK_USERS[currentUser.email].addresses = currentUser.addresses;
+
+            loadAddressesData(); // Recharger la liste
+            updateDashboardStats();
+            document.getElementById('addEditAddressFormContainer').style.display = 'none';
+        });
+
+        function editAddress(addressId) {
+            const addr = currentUser.addresses.find(a => a.id === addressId);
+            if (addr) {
+                document.getElementById('addressFormTitle').textContent = "Modifier l'adresse";
+                document.getElementById('addressId').value = addr.id;
+                document.getElementById('addressType').value = addr.type || '';
+                document.getElementById('addressStreetModal').value = addr.street;
+                document.getElementById('addressPostalCodeModal').value = addr.postalCode;
+                document.getElementById('addressCityModal').value = addr.city;
+                document.getElementById('addressCountryModal').value = addr.country;
+                document.getElementById('isDefaultShippingModal').checked = addr.isDefaultShipping || false;
+                document.getElementById('isDefaultBillingModal').checked = addr.isDefaultBilling || false;
+                document.getElementById('addEditAddressFormContainer').style.display = 'block';
+            }
+        }
+        function deleteAddress(addressId) {
+            if (confirm("Êtes-vous sûr de vouloir supprimer cette adresse ?")) {
+                currentUser.addresses = currentUser.addresses.filter(a => a.id !== addressId);
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                if (MOCK_USERS[currentUser.email]) MOCK_USERS[currentUser.email].addresses = currentUser.addresses;
+                loadAddressesData();
+                updateDashboardStats();
+            }
+        }
+        
+        function updateDashboardStats() {
+             const orders = JSON.parse(localStorage.getItem('userOrders')) || [];
+             const userOrders = orders.filter(order => order.user.email === currentUser.email);
+             document.getElementById('recentOrdersCount').textContent = userOrders.length;
+             document.getElementById('savedAddressesCount').textContent = currentUser.addresses ? currentUser.addresses.length : 0;
+        }
+
+    </script>
+</body>
+</html>

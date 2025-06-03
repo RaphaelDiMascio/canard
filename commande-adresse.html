@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Adresses de Commande</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <div class="checkout-steps">
+            <div class="checkout-step completed">1. Panier</div>
+            <div class="checkout-step active"><span class="step-number">2</span>Adresses</div>
+            <div class="checkout-step">3. Paiement & Livraison</div>
+            <div class="checkout-step">4. Confirmation</div>
+        </div>
+
+        <h2>Adresses de Livraison et de Facturation</h2>
+        <form id="addressesForm" class="form-container" style="max-width: 800px;">
+            <div id="addresses-message" class="form-message" style="display:none;"></div>
+
+            <fieldset>
+                <legend>Adresse de Livraison</legend>
+                <div id="shippingAddressesList" class="form-group">
+                    </div>
+                <div class="form-group">
+                    <input type="radio" name="shippingAddressOption" value="new" id="shippingNew" checked>
+                    <label for="shippingNew" style="display:inline; font-weight:normal;">Utiliser une nouvelle adresse de livraison</label>
+                </div>
+                <div id="newShippingAddressForm" style="padding-left: 20px; border-left: 2px solid #eee; margin-top:10px;">
+                    <div class="form-group">
+                        <label for="shippingStreet">N° et Nom de la voie : *</label>
+                        <input type="text" id="shippingStreet" name="shippingStreet">
+                    </div>
+                    <div class="form-group">
+                        <label for="shippingPostalCode">Code Postal : *</label>
+                        <input type="text" id="shippingPostalCode" name="shippingPostalCode">
+                    </div>
+                    <div class="form-group">
+                        <label for="shippingCity">Ville : *</label>
+                        <input type="text" id="shippingCity" name="shippingCity">
+                    </div>
+                    <div class="form-group">
+                        <label for="shippingCountry">Pays : *</label>
+                        <input type="text" id="shippingCountry" name="shippingCountry" value="France">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset style="margin-top: 2em;">
+                <legend>Adresse de Facturation</legend>
+                <div class="form-group">
+                    <input type="checkbox" id="sameAsShipping" name="sameAsShipping">
+                    <label for="sameAsShipping" style="display:inline; font-weight:normal;">Utiliser la même adresse que pour la livraison</label>
+                </div>
+                <div id="billingAddressSection">
+                    <div id="billingAddressesList" class="form-group">
+                        </div>
+                    <div class="form-group">
+                        <input type="radio" name="billingAddressOption" value="new" id="billingNew" checked>
+                        <label for="billingNew" style="display:inline; font-weight:normal;">Utiliser une nouvelle adresse de facturation</label>
+                    </div>
+                    <div id="newBillingAddressForm" style="padding-left: 20px; border-left: 2px solid #eee; margin-top:10px;">
+                        <div class="form-group">
+                            <label for="billingStreet">N° et Nom de la voie : *</label>
+                            <input type="text" id="billingStreet" name="billingStreet">
+                        </div>
+                        <div class="form-group">
+                            <label for="billingPostalCode">Code Postal : *</label>
+                            <input type="text" id="billingPostalCode" name="billingPostalCode">
+                        </div>
+                        <div class="form-group">
+                            <label for="billingCity">Ville : *</label>
+                            <input type="text" id="billingCity" name="billingCity">
+                        </div>
+                        <div class="form-group">
+                            <label for="billingCountry">Pays : *</label>
+                            <input type="text" id="billingCountry" name="billingCountry" value="France">
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <div class="order-actions" style="margin-top:2em;">
+                <a href="panier.html" class="btn btn-secondary">&laquo; Retour au Panier</a>
+                <button type="submit" class="btn btn-primary btn-large">Continuer vers Paiement & Livraison &raquo;</button>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+    </footer>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus();
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'connexion.html?redirect=commande-adresse.html';
+        }
+
+        function populateAddressList(listElementId, addressType, addresses) {
+            const listContainer = document.getElementById(listElementId);
+            listContainer.innerHTML = ''; // Clear
+            if (addresses && addresses.length > 0) {
+                addresses.forEach((addr, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                        <input type="radio" name="${addressType}AddressOption" value="${addr.id}" id="${addressType}${addr.id}" ${index === 0 ? 'checked' : ''}>
+                        <label for="${addressType}${addr.id}" style="display:inline; font-weight:normal;">
+                            <strong>${addr.type || 'Adresse enregistrée'} :</strong> ${addr.street}, ${addr.postalCode} ${addr.city}, ${addr.country}
+                        </label>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+        }
+        
+        if (currentUser && currentUser.addresses) {
+            populateAddressList('shippingAddressesList', 'shipping', currentUser.addresses.filter(a => a.isDefaultShipping || !currentUser.addresses.some(ad => ad.isDefaultShipping)));
+            populateAddressList('billingAddressesList', 'billing', currentUser.addresses.filter(a => a.isDefaultBilling || !currentUser.addresses.some(ad => ad.isDefaultBilling)));
+        }
+
+        const sameAsShippingCheckbox = document.getElementById('sameAsShipping');
+        const billingAddressSection = document.getElementById('billingAddressSection');
+        const newShippingForm = document.getElementById('newShippingAddressForm');
+        const newBillingForm = document.getElementById('newBillingAddressForm');
+
+        document.querySelectorAll('input[name="shippingAddressOption"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                newShippingForm.style.display = this.value === 'new' ? 'block' : 'none';
+            });
+        });
+         document.querySelectorAll('input[name="billingAddressOption"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                newBillingForm.style.display = this.value === 'new' ? 'block' : 'none';
+            });
+        });
+        // Initial state based on default checked
+        if(document.querySelector('input[name="shippingAddressOption"]:checked').value !== 'new') newShippingForm.style.display = 'none';
+        if(document.querySelector('input[name="billingAddressOption"]:checked').value !== 'new') newBillingForm.style.display = 'none';
+
+
+        sameAsShippingCheckbox.addEventListener('change', function() {
+            billingAddressSection.style.display = this.checked ? 'none' : 'block';
+            if (this.checked) {
+                // Si coché, on s'assure que les champs de nouvelle adresse de facturation ne sont pas requis (ou on les cache)
+                document.querySelectorAll('#newBillingAddressForm input[required]').forEach(input => input.removeAttribute('required'));
+            } else {
+                // Si décoché, on rétablit la logique d'affichage/validation du formulaire de facturation
+                 if(document.querySelector('input[name="billingAddressOption"]:checked').value === 'new') {
+                    document.querySelectorAll('#newBillingAddressForm input').forEach(input => {
+                        // Remettre 'required' si c'était le cas initialement (à adapter)
+                        if(['billingStreet', 'billingPostalCode', 'billingCity', 'billingCountry'].includes(input.id)) input.setAttribute('required', 'required');
+                    });
+                 }
+            }
+        });
+
+
+        document.getElementById('addressesForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const messageDiv = document.getElementById('addresses-message');
+            messageDiv.style.display = 'none';
+
+            let shippingAddress = {};
+            const shippingOption = document.querySelector('input[name="shippingAddressOption"]:checked').value;
+            if (shippingOption === 'new') {
+                shippingAddress = {
+                    street: document.getElementById('shippingStreet').value,
+                    postalCode: document.getElementById('shippingPostalCode').value,
+                    city: document.getElementById('shippingCity').value,
+                    country: document.getElementById('shippingCountry').value,
+                    type: "Nouvelle Livraison"
+                };
+                if (!shippingAddress.street || !shippingAddress.postalCode || !shippingAddress.city || !shippingAddress.country) {
+                    messageDiv.textContent = "Veuillez remplir tous les champs de la nouvelle adresse de livraison.";
+                    messageDiv.className = 'form-message error';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+            } else {
+                shippingAddress = currentUser.addresses.find(addr => addr.id === shippingOption);
+            }
+
+            let billingAddress = {};
+            if (sameAsShippingCheckbox.checked) {
+                billingAddress = { ...shippingAddress, type: shippingAddress.type.replace("Livraison", "Facturation") || "Nouvelle Facturation" };
+            } else {
+                const billingOption = document.querySelector('input[name="billingAddressOption"]:checked').value;
+                if (billingOption === 'new') {
+                    billingAddress = {
+                        street: document.getElementById('billingStreet').value,
+                        postalCode: document.getElementById('billingPostalCode').value,
+                        city: document.getElementById('billingCity').value,
+                        country: document.getElementById('billingCountry').value,
+                        type: "Nouvelle Facturation"
+                    };
+                     if (!billingAddress.street || !billingAddress.postalCode || !billingAddress.city || !billingAddress.country) {
+                        messageDiv.textContent = "Veuillez remplir tous les champs de la nouvelle adresse de facturation.";
+                        messageDiv.className = 'form-message error';
+                        messageDiv.style.display = 'block';
+                        return;
+                    }
+                } else {
+                    billingAddress = currentUser.addresses.find(addr => addr.id === billingOption);
+                }
+            }
+            
+            if (!shippingAddress || !billingAddress) {
+                 messageDiv.textContent = "Erreur lors de la sélection des adresses.";
+                 messageDiv.className = 'form-message error';
+                 messageDiv.style.display = 'block';
+                return;
+            }
+
+            sessionStorage.setItem('shippingAddress', JSON.stringify(shippingAddress));
+            sessionStorage.setItem('billingAddress', JSON.stringify(billingAddress));
+
+            window.location.href = 'commande-paiement.html';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Votre Panier B2B</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html" class="active">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <h2>Votre Panier Professionnel</h2>
+
+        <div id="cart-empty-message" class="form-message info" style="display:none; text-align:center;">
+            <p>Votre panier est actuellement vide.</p>
+            <a href="Catalogue.html" class="btn btn-primary" style="margin-top:1em;">Commencer mes achats</a>
+        </div>
+        
+        <div id="cart-login-prompt" class="form-message info" style="display:none; text-align:center;">
+             <p>Veuillez vous <a href="connexion.html">connecter</a> ou <a href="inscription.html">créer un compte</a> pour finaliser votre commande et bénéficier de vos conditions tarifaires.</p>
+        </div>
+
+
+        <div id="cart-content" style="display:none;">
+             <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th colspan="2">Produit</th>
+                        <th>Prix Unitaire HT</th>
+                        <th>Quantité</th>
+                        <th>Total Ligne HT</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-items-container">
+                    </tbody>
+            </table>
+
+            <div class="cart-summary">
+                <h3>Récapitulatif de la Commande</h3>
+                <div class="promo-code">
+                    <label for="promoCodeInput">Code Promotionnel :</label>
+                    <input type="text" id="promoCodeInput" placeholder="Saisir un code">
+                    <button class="btn btn-secondary btn-sm" onclick="applyPromoCode()">Appliquer</button>
+                </div>
+                <div id="promo-feedback" style="font-size:0.85em; margin-bottom:1em;"></div>
+
+                <div class="summary-row">
+                    <span>Sous-total Brut (HT) :</span>
+                    <span id="summary-subtotal-brut">0.00 €</span>
+                </div>
+                 <div class="summary-row" id="summary-contractual-discount-row" style="display:none;">
+                    <span>Remise Contractuelle :</span>
+                    <span id="summary-contractual-discount" style="color: green;">-0.00 €</span>
+                </div>
+                <div class="summary-row" id="summary-promo-discount-row" style="display:none;">
+                    <span>Remise Promotionnelle :</span>
+                    <span id="summary-promo-discount" style="color: green;">-0.00 €</span>
+                </div>
+                <div class="summary-row">
+                    <span>Sous-total Net (HT) :</span>
+                    <span id="summary-subtotal-net" style="font-weight:bold;">0.00 €</span>
+                </div>
+                <div class="summary-row">
+                    <span>TVA (20% estimée) :</span>
+                    <span id="summary-vat">0.00 €</span>
+                </div>
+                <div class="summary-row">
+                    <span>Frais de livraison estimés (HT) :</span>
+                    <span id="summary-shipping">À calculer</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Estimé (TTC) :</span>
+                    <span id="summary-grand-total">0.00 €</span>
+                </div>
+                 <p style="font-size:0.8em; text-align:right; margin-top:5px;">Le montant final et les frais de livraison seront confirmés à l'étape suivante.</p>
+            </div>
+
+            <div class="cart-actions">
+                <a href="Catalogue.html" class="btn btn-secondary">Continuer mes achats</a>
+                <button id="checkoutButton" class="btn btn-primary btn-large" onclick="proceedToCheckout()">Valider le Panier et Commander</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+        <p><a href="#">Mentions Légales</a> | <a href="#">Conditions Générales de Vente B2B</a></p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus();
+
+        let currentAppliedPromoCode = null;
+
+        function displayCart() {
+            const cart = getCart();
+            const cartItemsContainer = document.getElementById('cart-items-container');
+            const cartContentDiv = document.getElementById('cart-content');
+            const cartEmptyMessageDiv = document.getElementById('cart-empty-message');
+            const cartLoginPromptDiv = document.getElementById('cart-login-prompt');
+            const checkoutButton = document.getElementById('checkoutButton');
+            
+            cartItemsContainer.innerHTML = ''; // Clear previous items
+
+            if (cart.length === 0) {
+                cartContentDiv.style.display = 'none';
+                cartEmptyMessageDiv.style.display = 'block';
+                cartLoginPromptDiv.style.display = 'none';
+                return;
+            }
+
+            cartContentDiv.style.display = 'block';
+            cartEmptyMessageDiv.style.display = 'none';
+            
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                cartLoginPromptDiv.style.display = 'block';
+                checkoutButton.textContent = 'Se connecter pour commander';
+                checkoutButton.onclick = () => { window.location.href = 'connexion.html?redirect=panier.html'; };
+            } else {
+                cartLoginPromptDiv.style.display = 'none';
+                checkoutButton.textContent = 'Valider le Panier et Commander';
+                checkoutButton.onclick = proceedToCheckout;
+            }
+
+
+            cart.forEach(item => {
+                const product = getProductById(item.productId);
+                if (product) {
+                    const row = cartItemsContainer.insertRow();
+                    row.setAttribute('data-product-id', product.id);
+                    
+                    const cellImage = row.insertCell();
+                    cellImage.innerHTML = `<img src="${product.image}" alt="${product.name}">`;
+                    
+                    const cellName = row.insertCell();
+                    cellName.className = 'product-info-cell';
+                    cellName.innerHTML = `<div><strong>${product.name}</strong><br><small>Réf: ${product.id.toUpperCase()}</small><br><small>Stock: ${product.stock}</small></div>`;
+                    
+                    const cellPrice = row.insertCell();
+                    cellPrice.textContent = `${product.priceHT.toFixed(2)} €`;
+                    cellPrice.setAttribute('data-label', 'Prix Unitaire HT');
+
+
+                    const cellQuantity = row.insertCell();
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = 'number';
+                    quantityInput.value = item.quantity;
+                    quantityInput.min = 1;
+                    quantityInput.max = product.stock; // Limite au stock dispo
+                    quantityInput.setAttribute('data-product-id', product.id);
+                    quantityInput.onchange = function() { 
+                        // DS14: Modifier une ligne du panier
+                        updateCartQuantity(product.id, this.value); 
+                        displayCart(); // Re-render cart to update totals
+                    };
+                    cellQuantity.appendChild(quantityInput);
+                    cellQuantity.setAttribute('data-label', 'Quantité');
+
+
+                    const cellTotal = row.insertCell();
+                    cellTotal.textContent = `${(product.priceHT * item.quantity).toFixed(2)} €`;
+                    cellTotal.className = 'line-total';
+                    cellTotal.setAttribute('data-label', 'Total Ligne HT');
+
+
+                    const cellAction = row.insertCell();
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'btn btn-danger btn-sm';
+                    removeButton.textContent = 'Supprimer';
+                    removeButton.onclick = function() {
+                        // DS15: Supprimer un produit du panier
+                        if(confirm(`Voulez-vous vraiment supprimer "${product.name}" de votre panier ?`)) {
+                            removeFromCart(product.id);
+                            displayCart(); // Re-render cart
+                        }
+                    };
+                    cellAction.appendChild(removeButton);
+                    cellAction.setAttribute('data-label', 'Action');
+
+                }
+            });
+            updateCartSummary();
+        }
+
+        function updateCartSummary() {
+            const cart = getCart();
+            const totals = calculateCartTotals(cart, currentAppliedPromoCode); // Fonction de cart.js
+
+            document.getElementById('summary-subtotal-brut').textContent = `${totals.subtotalHT.toFixed(2)} €`;
+            
+            const contractualDiscountRow = document.getElementById('summary-contractual-discount-row');
+            const contractualDiscountEl = document.getElementById('summary-contractual-discount');
+            const currentUser = getCurrentUser();
+            if (currentUser && currentUser.contractualRemiseRate > 0 && totals.subtotalHT > 0) {
+                const contractualDiscountAmount = totals.subtotalHT * currentUser.contractualRemiseRate;
+                contractualDiscountEl.textContent = `-${contractualDiscountAmount.toFixed(2)} € (${(currentUser.contractualRemiseRate * 100).toFixed(0)}%)`;
+                contractualDiscountRow.style.display = 'flex';
+            } else {
+                contractualDiscountRow.style.display = 'none';
+            }
+
+            const promoDiscountRow = document.getElementById('summary-promo-discount-row');
+            const promoDiscountEl = document.getElementById('summary-promo-discount');
+             if (totals.discountAmount > 0 && (!currentUser || (currentUser.contractualRemiseRate * totals.subtotalHT) < totals.discountAmount )) {
+                // Affiche la remise promo si elle existe et est supérieure à la seule remise contractuelle
+                let displayedPromoDiscount = totals.discountAmount;
+                if(currentUser && currentUser.contractualRemiseRate > 0){
+                    displayedPromoDiscount -= (totals.subtotalHT * currentUser.contractualRemiseRate);
+                }
+                if (displayedPromoDiscount > 0.005) { // Seuil pour éviter affichage de 0.00
+                    promoDiscountEl.textContent = `-${displayedPromoDiscount.toFixed(2)} €`;
+                    promoDiscountRow.style.display = 'flex';
+                } else {
+                     promoDiscountRow.style.display = 'none';
+                }
+            } else {
+                promoDiscountRow.style.display = 'none';
+            }
+
+
+            document.getElementById('summary-subtotal-net').textContent = `${totals.finalSubtotalHT.toFixed(2)} €`;
+            document.getElementById('summary-vat').textContent = `${totals.tvaAmount.toFixed(2)} €`;
+            document.getElementById('summary-shipping').textContent = totals.shippingCost > 0 ? `${totals.shippingCost.toFixed(2)} €` : 'Offerte';
+            document.getElementById('summary-grand-total').textContent = `${totals.totalTTC.toFixed(2)} €`;
+        }
+
+        function applyPromoCode() {
+            // DS18
+            const promoInput = document.getElementById('promoCodeInput');
+            const promoFeedback = document.getElementById('promo-feedback');
+            currentAppliedPromoCode = promoInput.value.trim();
+            
+            // Simuler la validation du code promo (la logique est dans calculateCartTotals)
+            const cart = getCart();
+            const oldTotals = calculateCartTotals(cart, null); // Totaux sans le nouveau code
+            const newTotals = calculateCartTotals(cart, currentAppliedPromoCode);
+
+            if (currentAppliedPromoCode === "") {
+                 promoFeedback.textContent = "";
+                 currentAppliedPromoCode = null; // Réinitialiser si vide
+            } else if (newTotals.discountAmount > oldTotals.discountAmount || (newTotals.discountAmount > 0 && !oldTotals.discountAmount)) {
+                promoFeedback.textContent = `Code "${currentAppliedPromoCode}" appliqué avec succès.`;
+                promoFeedback.style.color = 'green';
+            } else {
+                promoFeedback.textContent = `Code "${currentAppliedPromoCode}" invalide ou non applicable.`;
+                promoFeedback.style.color = 'red';
+                currentAppliedPromoCode = null; // Réinitialiser si invalide pour ne pas le garder
+                promoInput.value = ""; // Vider le champ si code invalide
+            }
+            updateCartSummary();
+        }
+
+
+        function proceedToCheckout() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                window.location.href = 'connexion.html?redirect=panier.html';
+                return;
+            }
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert("Votre panier est vide. Veuillez ajouter des produits avant de commander.");
+                return;
+            }
+            // Sauvegarder le panier et les totaux pour les prochaines étapes
+            const totals = calculateCartTotals(cart, currentAppliedPromoCode);
+            sessionStorage.setItem('checkoutCart', JSON.stringify(cart));
+            sessionStorage.setItem('checkoutTotals', JSON.stringify(totals));
+
+            window.location.href = 'commande-adresse.html';
+        }
+
+        // Affichage initial du panier
+        displayCart();
+    </script>
+</body>
+</html>

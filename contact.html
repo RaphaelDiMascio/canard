@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Contactez Notre Service Professionnel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html" class="active">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <div class="form-container" style="max-width: 900px;">
+            <h2>Contactez Notre Équipe Dédiée aux Professionnels</h2>
+            <p style="text-align: center; margin-bottom: 2em; font-size:1em;">Pour toute question concernant nos produits, vos commandes, l'ouverture d'un compte ou une demande de devis spécifique, n'hésitez pas à nous contacter.</p>
+
+            <div id="contact-form-message" class="form-message" style="display:none;"></div>
+
+            <div class="contact-layout">
+                <div class="contact-info">
+                    <h3>Canard Dodu SAS</h3>
+                    <p><strong>Adresse :</strong><br>123 Rue du Goût Authentique<br>75000 Terroirville, France</p>
+                    <p><strong>Service Commercial B2B :</strong><br>Téléphone : <a href="tel:+33123456789">01 23 45 67 89</a><br>Email : <a href="mailto:servicepro@canard-dodu.fr">servicepro@canard-dodu.fr</a></p>
+                    <p><strong>Horaires d'ouverture :</strong><br>Lundi - Vendredi : 8h30 - 18h00</p>
+                    <p style="margin-top:1.5em;">Nous nous engageons à vous répondre dans les meilleurs délais.</p>
+                </div>
+
+                <form id="contactFormPage" class="contact-form-section">
+                    <div class="form-group">
+                        <label for="pageContactName">Votre Nom / Nom de Société : *</label>
+                        <input type="text" id="pageContactName" name="pageContactName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pageContactEmail">Votre Adresse Email : *</label>
+                        <input type="email" id="pageContactEmail" name="pageContactEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pageContactPhone">Votre Numéro de Téléphone :</label>
+                        <input type="tel" id="pageContactPhone" name="pageContactPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="pageContactSubject">Objet de votre demande : *</label>
+                        <select id="pageContactSubject" name="pageContactSubject" required>
+                            <option value="">-- Veuillez sélectionner un objet --</option>
+                            <option value="information_produits">Demande d'information sur les produits</option>
+                            <option value="devis_specifique">Demande de devis spécifique</option>
+                            <option value="ouverture_compte">Question sur l'ouverture de compte</option>
+                            <option value="suivi_commande">Suivi de commande existante</option>
+                            <option value="partenariat">Proposition de partenariat</option>
+                            <option value="autre">Autre demande</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pageContactMessage">Votre Message Détaillé : *</label>
+                        <textarea id="pageContactMessage" name="pageContactMessage" rows="7" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large">Envoyer votre message</button>
+                </form>
+            </div>
+            
+            <div class="map-container">
+                Localisation de Canard Dodu (Carte interactive ou image)
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+        <p><a href="#">Mentions Légales</a> | <a href="#">Conditions Générales de Vente B2B</a></p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus();
+
+        const contactForm = document.getElementById('contactFormPage');
+        const contactFormMessage = document.getElementById('contact-form-message');
+
+        contactForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Simulation d'envoi
+            contactFormMessage.innerHTML = `Merci, ${document.getElementById('pageContactName').value || 'Visiteur'} !<br>Votre message concernant "${document.getElementById('pageContactSubject').selectedOptions[0].text}" a bien été envoyé. Notre équipe vous répondra prochainement.`;
+            contactFormMessage.className = 'form-message success';
+            contactFormMessage.style.display = 'block';
+            
+            contactForm.reset(); // Vide le formulaire après envoi (simulation)
+
+            setTimeout(() => {
+                contactFormMessage.style.display = 'none';
+            }, 5000); // Cache le message après 5 secondes
+        });
+
+        // Pré-remplir le nom et l'email si l'utilisateur est connecté
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            document.getElementById('pageContactName').value = currentUser.contactName || currentUser.companyName || '';
+            document.getElementById('pageContactEmail').value = currentUser.email || '';
+            if (currentUser.phone) {
+                 document.getElementById('pageContactPhone').value = currentUser.phone || '';
+            }
+        }
+    </script>
+</body>
+</html>

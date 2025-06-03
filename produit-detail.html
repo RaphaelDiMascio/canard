@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canard Dodu - Détail Produit</title> <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="images/Logo_Canard_Dodu.png" alt="Logo Canard Dodu">
+            </div>
+            <div class="header-text">
+                <h1>Canard Dodu</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+
+        <a href="Catalogue.html">Catalogue</a>
+        <a href="mon-compte.html" id="nav-mon-compte" style="display:none;">Mon Compte</a>
+        <a href="panier.html">Panier (<span id="nav-cart-count">0</span>)</a>
+        <a href="contact.html">Contact</a>
+        <a href="connexion.html" id="nav-connexion" class="nav-right">Connexion</a>
+        <a href="#" id="nav-deconnexion" class="nav-right" style="display:none;" onclick="logout()">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+     &gt; <a href="Catalogue.html">Catalogue</a> &gt; <span id="product-category-breadcrumb">Catégorie</span> &gt; <span id="product-name-breadcrumb">Nom du Produit</span>
+        </div>
+
+        <div id="productDetailContent" class="product-detail-layout" style="display:none;">
+            <div class="product-image-gallery">
+                <img src="" alt="Image principale du produit" id="main-product-image">
+                <div class="product-thumbnails" id="product-thumbnails-container">
+                    </div>
+            </div>
+
+            <div class="product-info">
+                <h1 id="product-name-heading"></h1>
+                <p class="product-ref">Référence : <span id="product-reference"></span></p>
+                <p class="product-price-detail"><span id="product-price-value"></span> € HT / <span id="product-unit"></span></p>
+                <p class="product-availability">Disponibilité : <span id="product-stock-status"></span></p>
+                
+                <div class="product-description-detail" id="product-description-text"></div>
+
+                <div class="product-specs">
+                    <h3>Caractéristiques & Spécifications</h3>
+                    <ul id="product-specs-list">
+                        </ul>
+                </div>
+                
+                <div class="quantity-selector">
+                    <label for="quantity">Quantité :</label>
+                    <input type="number" id="quantityInput" name="quantity" value="1" min="1" max="99"> </div>
+
+                <div class="product-actions-detail">
+                    <button id="addToCartButtonDetail" class="btn btn-primary btn-large">Ajouter au panier</button>
+                    <p id="alternativeMessage" style="display:none; margin-top:10px; font-style:italic;"></p>
+                </div>
+            </div>
+        </div>
+        <div id="productNotFound" style="display:none; text-align:center; padding:2em;">
+            <p>Désolé, le produit demandé n'a pas été trouvé ou n'est plus disponible.</p>
+            <a href="Catalogue.html" class="btn btn-primary">Retour au Catalogue</a>
+        </div>
+
+
+        <section class="related-products" style="display:none;" id="related-products-section">
+            <h2>Produits Similaires ou Complémentaires</h2>
+            <div class="product-grid" id="related-products-grid">
+                </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Canard Dodu. Tous droits réservés.</p>
+        <p><a href="#">Mentions Légales</a> | <a href="#">Conditions Générales de Vente B2B</a></p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        updateNavCartCount();
+        checkLoginStatus();
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const product = getProductById(productId); // Fonction de cart.js
+
+            if (product) {
+                document.title = `Canard Dodu - ${product.name}`;
+                document.getElementById('product-category-breadcrumb').textContent = product.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                document.getElementById('product-category-breadcrumb').href = `Catalogue.html?category=${product.category}`;
+                document.getElementById('product-name-breadcrumb').textContent = product.name;
+                
+                document.getElementById('main-product-image').src = product.image;
+                document.getElementById('main-product-image').alt = product.name;
+                
+                // Simuler des vignettes (on pourrait avoir un tableau d'images dans MOCK_PRODUCTS)
+                const thumbnailsContainer = document.getElementById('product-thumbnails-container');
+                thumbnailsContainer.innerHTML = ''; // Clear
+                const mainThumb = document.createElement('img');
+                mainThumb.src = product.image;
+                mainThumb.alt = `Vignette principale ${product.name}`;
+                mainThumb.classList.add('active-thumb');
+                mainThumb.onclick = () => switchMainImage(product.image, mainThumb);
+                thumbnailsContainer.appendChild(mainThumb);
+                // Ajouter d'autres vignettes si disponibles dans product.thumbnails par exemple
+
+                document.getElementById('product-name-heading').textContent = product.name;
+                document.getElementById('product-reference').textContent = product.id.toUpperCase();
+                document.getElementById('product-price-value').textContent = product.priceHT.toFixed(2);
+                document.getElementById('product-unit').textContent = product.unit;
+
+                const stockStatusEl = document.getElementById('product-stock-status');
+                if (product.stock > 0) {
+                    stockStatusEl.textContent = `En stock (${product.stock} unités)`;
+                    stockStatusEl.className = 'in-stock';
+                    document.getElementById('quantityInput').max = product.stock;
+                    document.getElementById('addToCartButtonDetail').disabled = false;
+                } else {
+                    stockStatusEl.textContent = 'Indisponible';
+                    stockStatusEl.className = 'out-of-stock';
+                    document.getElementById('quantityInput').value = 0;
+                    document.getElementById('quantityInput').disabled = true;
+                    document.getElementById('addToCartButtonDetail').disabled = true;
+                    // DS16: Message d'alternative (simple)
+                    document.getElementById('alternativeMessage').textContent = "Ce produit est actuellement indisponible. Vous pouvez consulter des produits similaires ci-dessous ou nous contacter pour plus d'informations.";
+                    document.getElementById('alternativeMessage').style.display = 'block';
+                }
+
+                document.getElementById('product-description-text').innerHTML = `<p>${product.description.replace(/\n/g, '</p><p>')}</p>`;
+                
+                const specsList = document.getElementById('product-specs-list');
+                specsList.innerHTML = ''; // Clear
+                if(product.specs) { // Specs est une string dans MOCK_PRODUCTS
+                    product.specs.split(',').forEach(spec => {
+                        const li = document.createElement('li');
+                        const parts = spec.split(':');
+                        if(parts.length === 2) {
+                            li.innerHTML = `<strong>${parts[0].trim()}:</strong> ${parts[1].trim()}`;
+                        } else {
+                            li.textContent = spec.trim();
+                        }
+                        specsList.appendChild(li);
+                    });
+                }
+                if(product.allergens && product.allergens !== "Aucun") {
+                     const liAllergen = document.createElement('li');
+                     liAllergen.innerHTML = `<strong>Allergènes:</strong> <span style="color:red;">${product.allergens}</span>`;
+                     specsList.appendChild(liAllergen);
+                }
+
+
+                document.getElementById('productDetailContent').style.display = 'grid';
+                loadRelatedProducts(product.category, product.id);
+
+                document.getElementById('addToCartButtonDetail').onclick = () => {
+                    const quantity = parseInt(document.getElementById('quantityInput').value);
+                    if (quantity > 0) {
+                        addToCart(productId, quantity);
+                    } else {
+                        alert("Veuillez sélectionner une quantité valide.");
+                    }
+                };
+
+            } else {
+                document.title = "Canard Dodu - Produit Non Trouvé";
+                document.getElementById('productNotFound').style.display = 'block';
+            }
+        };
+
+        function switchMainImage(newImageSrc, clickedThumb) {
+            document.getElementById('main-product-image').src = newImageSrc;
+            const thumbnails = document.querySelectorAll('.product-thumbnails img');
+            thumbnails.forEach(thumb => thumb.classList.remove('active-thumb'));
+            if(clickedThumb) clickedThumb.classList.add('active-thumb');
+        }
+
+        function loadRelatedProducts(category, currentProductId) {
+            const relatedSection = document.getElementById('related-products-section');
+            const relatedGrid = document.getElementById('related-products-grid');
+            relatedGrid.innerHTML = '';
+            let count = 0;
+            const allProductsArray = Object.values(MOCK_PRODUCTS);
+
+            for (const p of allProductsArray) {
+                if (p.category === category && p.id !== currentProductId && count < 3 && p.stock > 0) {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    // Utilisation d'une structure similaire à celle du Catalogue pour la cohérence
+                    card.innerHTML = `
+                        <img src="${p.image}" alt="${p.name}" onerror="this.src='https://placehold.co/300x220/ccc/444?text=Image+Indisponible';">
+                        <div>
+                            <h3>${p.name}</h3>
+                             <p class="description">${p.description.substring(0, 70)}${p.description.length > 70 ? '...' : ''}</p>
+                        </div>
+                        <div>
+                            <p class="price">${p.priceHT.toFixed(2)} € HT / ${p.unit}</p>
+                            <div class="actions">
+                                <a href="produit-detail.html?id=${p.id}" class="btn btn-secondary btn-sm">Voir Détails</a>
+                            </div>
+                        </div>
+                    `;
+                    relatedGrid.appendChild(card);
+                    count++;
+                }
+            }
+            if (count > 0) {
+                relatedSection.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
