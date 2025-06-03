@@ -108,9 +108,6 @@
                         <p class="price">${product.priceHT.toFixed(2)} € HT / ${product.unit}</p>
                         <div class="actions">
                             <a href="produit-detail.html?id=${product.id}" class="btn btn-secondary btn-sm">Voir Détails</a>
-                            <button class="btn btn-primary btn-sm" onclick="handleAddToCart('${product.id}')" ${product.stock === 0 ? 'disabled' : ''}>
-                                ${product.stock === 0 ? 'Indisponible' : 'Ajouter'}
-                            </button>
                         </div>
                     </div>
                 `;
@@ -123,7 +120,7 @@
         function handleAddToCart(productId) {
             // DS09: Ajouter un produit au panier
             // DS16: Gestion indisponibilité (partiellement géré par le bouton désactivé et la logique dans cart.js)
-            addToCart(productId, 1); 
+            addToCart(productId, 1);
         }
 
         function setupPagination(totalItems, page) {
