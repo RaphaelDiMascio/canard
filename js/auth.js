@@ -104,12 +104,14 @@ function checkLoginStatus() {
     const navConnexion = document.getElementById('nav-connexion');
     const navDeconnexion = document.getElementById('nav-deconnexion');
     const heroInscriptionBtn = document.getElementById('hero-inscription-btn');
+    const navCodePromo = document.getElementById('nav-code-promo');
 
 
     if (currentUser) {
         if (navMonCompte) navMonCompte.style.display = 'inline-block';
         if (navConnexion) navConnexion.style.display = 'none';
         if (navDeconnexion) navDeconnexion.style.display = 'inline-block';
+        if (navCodePromo) navCodePromo.style.display = 'inline-block';
         if (heroInscriptionBtn) heroInscriptionBtn.style.display = 'none'; // Cache le bouton d'inscription si connecté
 
         // Personnalisation du message d'accueil si l'élément existe
@@ -122,6 +124,7 @@ function checkLoginStatus() {
         if (navMonCompte) navMonCompte.style.display = 'none';
         if (navConnexion) navConnexion.style.display = 'inline-block';
         if (navDeconnexion) navDeconnexion.style.display = 'none';
+        if (navCodePromo) navCodePromo.style.display = 'none';
         if (heroInscriptionBtn) heroInscriptionBtn.style.display = 'inline-block';
     }
 }
