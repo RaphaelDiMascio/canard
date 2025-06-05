@@ -64,7 +64,7 @@
         </div>
         <div id="productNotFound" style="display:none; text-align:center; padding:2em;">
             <p>Désolé, le produit demandé n'a pas été trouvé ou n'est plus disponible.</p>
-            <a href="Catalogue.html" class="btn btn-primary">Retour au Catalogue</a>
+            <a href="index.html" class="btn btn-primary">Retour au Catalogue</a>
         </div>
 
 
@@ -95,7 +95,7 @@
             if (product) {
                 document.title = `Canard Dodu - ${product.name}`;
                 document.getElementById('product-category-breadcrumb').textContent = product.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                document.getElementById('product-category-breadcrumb').href = `Catalogue.html?category=${product.category}`;
+                document.getElementById('product-category-breadcrumb').href = `index.html?category=${product.category}`;
                 document.getElementById('product-name-breadcrumb').textContent = product.name;
                 
                 document.getElementById('main-product-image').src = product.image;
